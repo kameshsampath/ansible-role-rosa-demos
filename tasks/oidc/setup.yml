@@ -22,7 +22,7 @@
 - name: Generate openid-configuration
   template:
     dest: openid-configuration
-    src:  openid-configuration
+    src:  oidc/openid-configuration
   when: keys_out.rc == 0
 
 - name: "Create OIDC Bucket::{{ oidc_bucket_name }}"
