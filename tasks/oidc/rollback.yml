@@ -1,0 +1,27 @@
+---
+
+- name: Delete keys.json
+  file:
+    path: keys.json
+    state: absent
+
+- name: Delete Signer Public Key
+  file:
+    path: "{{ pkcs_key_file }}"
+    state: absent
+
+- name: Delete OpenId Configuration
+  file:
+    path: openid-configuration
+    state: absent
+
+- name: "Delete OIDC Bucket::{{ oidc_bucket_name }}"
+  aws_s3:
+    bucket: "{{ oidc_bucket_name }}"
+    region: "{{ aws_region }}"
+    mode: delete
+
+- name: Delete AWS Credentials folder
+  file:
+    path: "/home/runner/.aws"
+    state: absent

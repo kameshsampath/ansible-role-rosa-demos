@@ -1,0 +1,8 @@
+---
+pkcs_key_file: "sa-singer.pub"
+aws_region: "us-west-2"
+oidc_bucket_name: "rosa-demos-oidc"
+oidc_issuer_url: "https://s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}"
+rollback: False
+
+oidc: False

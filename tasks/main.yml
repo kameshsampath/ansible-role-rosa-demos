@@ -1,0 +1,29 @@
+---
+- debug: msg="Jai Guru"
+
+- name: Create AWS Credentials folder
+  file:
+    path: "/home/runner/.aws"
+    state: directory
+    mode: 0644
+
+- name: Create AWS Credentials file
+  file:
+    path: "/home/runner/.aws/credentials"
+    state: touch
+    mode: 0644
+
+- name: Save AWS Credentials
+  copy:
+    dest: "{{ansible_env.HOME}}/.aws/credentials"
+    content: |
+      [default]
+      aws_access_key_id     = {{ aws_access_key }}
+      aws_secret_access_key = {{ aws_secret_key }}
+
+
+- include: oidc/rollback.yml
+  when: oidc and rollback
+
+- include: oidc/setup.yml
+  when: oidc and not rollback

@@ -1,0 +1,14 @@
+collections:
+  - name: community.kubernetes
+    version: 1.2.0
+  - name: community.aws
+    version: 1.4.0
+  - name: community.crypto
+    version: 1.5.0
+roles:
+  - git+file:///Users/kameshs/git/kameshsampath/ansible-role-rosa-demos
+
+  - name: kameshsampath.rosa_demos
+    # src: https://github.com/kameshsampath/ansible-role-rosa-demos
+    # version: master
+    

@@ -1,0 +1,9 @@
+= Ansible Role ROSA Demos
+
+Set of Ansible scripts and execution environment that can be used with ROSA Demo setup.
+
+You can do the following with this Ansible role:
+
+[] Setup AWS OIDC Provider
+
+[IMPORTANT]: Work in Progress
