@@ -6,12 +6,14 @@
     path: "/home/runner/.aws"
     state: directory
     mode: 0644
+  when: create_aws_credentials_file
 
 - name: Create AWS Credentials file
   file:
     path: "/home/runner/.aws/credentials"
     state: touch
     mode: 0644
+  when: create_aws_credentials_file
 
 - name: Save AWS Credentials
   copy:
@@ -20,10 +22,11 @@
       [default]
       aws_access_key_id     = {{ aws_access_key }}
       aws_secret_access_key = {{ aws_secret_key }}
+  when: create_aws_credentials_file
 
+- name: Get Current AWS User Details
+  amazon.aws.aws_caller_info:
+  register: aws_caller_info
 
-- include: oidc/rollback.yml
-  when: oidc and rollback
-
-- include: oidc/setup.yml
-  when: oidc and not rollback
+- include: iam/main.yml
+  when: iam

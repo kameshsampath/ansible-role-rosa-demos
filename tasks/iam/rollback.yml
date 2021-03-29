@@ -1,0 +1,54 @@
+---
+
+- name: Delete keys.json
+  file:
+    path: keys.json
+    state: absent
+
+- name: Delete Signer Public Key
+  file:
+    path: "{{ pkcs_key_file }}"
+    state: absent
+
+- name: Delete OpenId Configuration
+  file:
+    path: openid-configuration
+    state: absent
+
+- name: "Delete OIDC Bucket::{{ oidc_bucket_name }}"
+  aws_s3:
+    bucket: "{{ oidc_bucket_name }}"
+    region: "{{ aws_region }}"
+    mode: delete
+
+- name: "Delete OpenID Connect Provider"
+  shell: >
+    aws iam delete-open-id-connect-provider \
+      --open-id-connect-provider-arn "{{ openid_provider_arn }}"
+  args:
+    executable: /bin/bash
+  
+- name: "Delete IAM Role::{{ rosa_demo_role_name }}"
+  iam_role:
+    name: "{{ rosa_demo_role_name }}"
+    state: absent
+
+- name: "Delete Managed IAM Policy::{{ rosa_demo_policy_name }}"
+  iam_managed_policy:
+    policy_name: "{{ rosa_demo_policy_name }}"
+    state: absent
+
+# TODO
+# - name: Remove OpenShift Authentication
+#   community.kubernetes.k8s:
+#     api_version: config.openshift.io/v1
+#     kind: Authentication
+#     name: cluster
+#     namespace: config
+#     merge_type: merge
+#     definition: "{{ lookup('template', 'openshift-oauth-rm.yaml.j2') | from_yaml }}"
+
+- name: Delete AWS Credentials folder
+  file:
+    path: "/home/runner/.aws"
+    state: absent

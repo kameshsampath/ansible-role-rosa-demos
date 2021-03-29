@@ -41,3 +41,4 @@ nb-configuration.xml
 **/work/
 .kube
 playbook.yml
+project

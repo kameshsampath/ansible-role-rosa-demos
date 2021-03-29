@@ -1,0 +1,115 @@
+---
+
+- name: Get Service Account Signer Key
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: ConfigMap
+    name: bound-sa-token-signing-certs
+    namespace: openshift-kube-apiserver
+  register: sa_signer_cm_out
+
+- name: Save Signer Public Key
+  copy:
+    dest: "{{ pkcs_key_file }}"
+    content: "{{ sa_signer_cm_out.result.data['service-account-001.pub'] }}"
+  when: sa_signer_cm_out and  sa_signer_cm_out.result
+
+- name: Generate keys.json
+  shell: |
+   ./bin/self-hosted-linux -key {{ pkcs_key_file }} \
+     | jq '.keys += [.keys[0]] | .keys[1].kid = ""' > "keys.json"
+  register: keys_out
+
+- name: Generate openid-configuration
+  template:
+    dest: openid-configuration
+    src:  iam/openid-configuration
+  when: keys_out.rc == 0
+
+- name: "Create OIDC Bucket::{{ oidc_bucket_name }}"
+  aws_s3:
+    bucket: "{{ oidc_bucket_name }}"
+    region: "{{ aws_region }}"
+    mode: create
+
+- name: "Upload OIDC Assets to Bucket::{{ oidc_bucket_name }}"
+  aws_s3:
+    bucket: "{{ oidc_bucket_name }}"
+    region: "{{ aws_region }}"
+    object: "{{ item.object }}"
+    src: "{{ item.src }}"
+    permission: "public-read"
+    mode: put
+  with_items:
+    - {src: "openid-configuration",object: ".well-known/openid-configuration"}
+    - {src: "keys.json",object: "keys.json"}
+
+- name: Verify OIDC Public Assets
+  uri:
+    url: "https://s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}/{{ item }}"
+  with_items:
+    - 'keys.json'
+    - '.well-known/openid-configuration'
+
+- name: Get OIDC ROOT CA Certificate Fingerprint
+  shell: >
+    set -o pipefail &&
+    echo | openssl s_client -servername "{{ oidc_bucket_name }}.s3.{{ aws_region}}.amazonaws.com" -connect "{{ oidc_bucket_name }}.s3.{{ aws_region }}.amazonaws.com:443" -showcerts 2>/dev/null | awk '/BEGIN/,/END/{ if(/BEGIN/){a++}; out="cert"a".pem"; print >out}'
+
+    export ROOT_CA_FILE=$(ls -1v cert* | awk 'END{print $1}')
+
+    echo $(openssl x509 -in $ROOT_CA_FILE -fingerprint -noout | sed -e 's/.*Fingerprint=//' -e 's/://g')
+  args:
+    executable: /bin/bash
+  register: fingerprint_out
+
+- name: Check if OpenID Connect Provider Exists
+  shell: >
+    aws iam get-open-id-connect-provider \
+      --open-id-connect-provider-arn "{{ openid_provider_arn }}"
+  args:
+    executable: /bin/bash
+  register: openid_provider_check_out
+  ignore_errors: yes
+
+- name: Check if OpenID Connect Provider not found 
+  set_fact:
+    create: '{{ openid_provider_check_out.stderr_lines[1] | regex_search("^An\s*error\s*occurred.*operation:\s*OpenIDConnect\s*Provider\s*not\s*found.*$",multiline=True, ignorecase=True)}}'
+  when: openid_provider_check_out.stderr_lines | length == 2
+
+- name: Create OpenID Connect Provider
+  shell: >
+    aws iam create-open-id-connect-provider \
+    --url "{{ oidc_issuer_url }}" \
+    --thumbprint-list "{{ fingerprint_out.stdout }}" \
+    --client-id-list sts.amazonaws.com
+  args:
+    executable: /bin/bash
+  when: create is defined and  create | length > 0  and fingerprint_out and ( fingerprint_out.stderr | length == 0) 
+  register: openid_provider_out
+
+- name: "Create IAM Managed Policy::{{ rosa_demo_policy_name }}"
+  iam_managed_policy:
+    policy_name: "{{ rosa_demo_policy_name }}"
+    policy_description: "Policy for ROSA Demos"
+    policy: "{{ lookup('template', 'iam/policy.json') }}"
+    state: present
+  register: rosa_demos_policy_out
+
+- name: "Create IAM Role::{{ rosa_demo_role_name }}"
+  iam_role:
+    name: "{{ rosa_demo_role_name }}"
+    assume_role_policy_document: "{{ lookup('template','iam/trust-relationships.json')}}"
+    description: "The ROSA Demos Role"
+    managed_policy:
+     - "{{ rosa_demos_policy_out.policy.arn }}"
+  register: rosa_demos_role_out
+
+- name: Display Created Role ARN
+  debug:
+    var: rosa_demos_role_out.iam_role.arn
+
+
+
+  
+
