@@ -1,0 +1,10 @@
+- name: Rokkback OpenID Connect Provider
+  hosts: localhost
+  connection: local
+
+  vars:
+    rollback: True
+    iam: True
+
+  roles:
+    - kameshsampath.rosa_demos

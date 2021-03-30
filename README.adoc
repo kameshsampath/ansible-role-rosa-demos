@@ -1,9 +1,90 @@
 = Ansible Role ROSA Demos
 
-Set of Ansible scripts and execution environment that can be used with ROSA Demo setup.
+Set of Ansible scripts and execution environment that can be used to setup AWS resources that will be used as part of the https://aws.amazon.com/rosa/[ROSA] demos.
 
 You can do the following with this Ansible role:
 
-[] Setup AWS OIDC Provider
+[x] Setup AWS OIDC Provider
 
-[IMPORTANT]: Work in Progress
+== Requirements
+
+- Python v3
+
+- https://www.docker.com/products/docker-desktop[Docker Desktop] or Docker for Linux
+
+- https://ansible.com[Ansible >= v2.9.10]
+
+- https://aws.amazon.com/rosa/[ROSA]
+
+[source,bash]
+----
+pip3 install \
+  -r https://raw.githubusercontent.com/kameshsampath/ansible-role-rosa-demos/master/requirements.txt
+ansible-galaxy role install -r https://raw.githubusercontent.com/kameshsampath/ansible-role-rosa-demos/master/requirements.yml
+ansible-galaxy collection install -r https://raw.githubusercontent.com/kameshsampath/ansible-role-rosa-demos/master/requirements.yml
+----
+
+[NOTE]: For Windows its recommended to use Windows Subsystem for Linux (WSL)
+
+== Role Variables
+
+[%header,cols="1,2,1"]
+.Role Variables
+|===
+| Variable Name| Description | Default value
+
+| aws_region
+| The default AWS region to use for creating the resources
+| us-west-2
+
+| oidc_bucket_name
+| The s3 bucket used for holding the OpenId connect provider assets
+| rosa-demos-oidc
+
+| rosa_demo_role_name
+| The AWS IAM role that will be used as part of the Demos
+| ROSADemosRole
+
+| rosa_demo_policy_name
+| The AWS IAM policy that will be used to control what the Kubernetes Service Accounts can do
+| ROSADemosPolicy
+
+| rollback
+| Clean up all the created AWS resources
+| False
+
+| oidc
+| Create OpenId Connect Provider
+| False
+
+| create_aws_credentials_file
+| Create AWS Credential file
+| True
+|===
+
+== Example Playbooks
+
+The https://github.com/kameshsampath/ansible-role-rosa-demos/tree/master/examples[examples] directory has various playbook examples to get started using this role:
+
+e.g. 
+
+If you want to setup OpenId Connect Provider with a Policy and Role:
+
+[source,bash]
+----
+ansible-playbook examples/oidc_setup.yml
+----
+
+If you dont have Ansible installed locally, you can use the project https://github.com/kameshsampath/openshift-demos-ansible-ee[OpenShift Demos Ansible EE] to run the playbooks using Docker and https://ansible-runner.readthedocs.io/en/latest/[Ansible Runner].
+
+== License
+
+https://github.com/kameshsampath/ansible-role-rosa-demos/tree/master/LICENSE[Apache v2]
+
+== Author Information
+
+mailto:kamesh.sampath@hotmail.com[Kamesh Sampath]
+
+== Issues
+
+https://github.com/kameshsampath/ansible-role-rosa-demos/issues[Issues]

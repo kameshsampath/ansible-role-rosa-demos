@@ -1,0 +1,10 @@
+- name: Setup OpenID Connect Provider
+  hosts: localhost
+  connection: local
+
+  vars:
+    rollback: False
+    iam: True
+
+  roles:
+    - kameshsampath.rosa_demos
