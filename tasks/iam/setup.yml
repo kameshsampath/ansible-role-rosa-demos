@@ -104,12 +104,3 @@
     managed_policy:
      - "{{ rosa_demos_policy_out.policy.arn }}"
   register: rosa_demos_role_out
-
-- name: Display Created Role ARN
-  debug:
-    var: rosa_demos_role_out.iam_role.arn
-
-
-
-  
-
