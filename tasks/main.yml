@@ -1,6 +1,4 @@
 ---
-- debug: msg="Jai Guru"
-
 - name: Create AWS Credentials folder
   file:
     path: "/home/runner/.aws"
