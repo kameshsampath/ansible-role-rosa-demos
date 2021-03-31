@@ -53,8 +53,8 @@ ansible-galaxy collection install -r https://raw.githubusercontent.com/kameshsam
 | Clean up all the created AWS resources
 | False
 
-| oidc
-| Create OpenId Connect Provider
+| iam
+| Create OpenId Connect Provider and create IAM resources
 | False
 
 | create_aws_credentials_file
