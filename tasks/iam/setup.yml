@@ -15,14 +15,13 @@
 
 - name: Generate keys.json Content
   shell: |
-    set -o pipefail && {{self_hosted_binary}} -key {{ pkcs_key_file }} \
-    | jq '.keys += [.keys[0]] | .keys[1].kid = ""'
+    {{ self_hosted_binary }} -key {{ pkcs_key_file }}
   register: keys_out
 
 - name: Save keys.json
-  copy:
+  template:
     dest: keys.json
-    content: "{{ keys_out.stdout | from_json }}"
+    src: "iam/keys.json.j2"
 
 - name: Generate openid-configuration
   template:
