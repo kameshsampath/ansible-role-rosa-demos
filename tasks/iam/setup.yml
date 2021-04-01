@@ -1,5 +1,4 @@
 ---
-
 - name: Get Service Account Signer Key
   community.kubernetes.k8s:
     api_version: v1
@@ -14,16 +13,21 @@
     content: "{{ sa_signer_cm_out.result.data['service-account-001.pub'] }}"
   when: sa_signer_cm_out and  sa_signer_cm_out.result
 
-- name: Generate keys.json
+- name: Generate keys.json Content
   shell: |
-   ./bin/self-hosted-linux -key {{ pkcs_key_file }} \
-     | jq '.keys += [.keys[0]] | .keys[1].kid = ""' > "keys.json"
+    set -o pipefail && {{self_hosted_binary}} -key {{ pkcs_key_file }} \
+    | jq '.keys += [.keys[0]] | .keys[1].kid = ""'
   register: keys_out
+
+- name: Save keys.json
+  copy:
+    dest: keys.json
+    content: "{{ keys_out.stdout | from_json }}"
 
 - name: Generate openid-configuration
   template:
     dest: openid-configuration
-    src:  iam/openid-configuration
+    src: iam/openid-configuration
   when: keys_out.rc == 0
 
 - name: "Create OIDC Bucket::{{ oidc_bucket_name }}"
@@ -41,15 +45,18 @@
     permission: "public-read"
     mode: put
   with_items:
-    - {src: "openid-configuration",object: ".well-known/openid-configuration"}
-    - {src: "keys.json",object: "keys.json"}
+    - {
+        src: "openid-configuration",
+        object: ".well-known/openid-configuration",
+      }
+    - { src: "keys.json", object: "keys.json" }
 
 - name: Verify OIDC Public Assets
   uri:
     url: "https://s3.{{ aws_region }}.amazonaws.com/{{ oidc_bucket_name }}/{{ item }}"
   with_items:
-    - 'keys.json'
-    - '.well-known/openid-configuration'
+    - "keys.json"
+    - ".well-known/openid-configuration"
 
 - name: Get OIDC ROOT CA Certificate Fingerprint
   shell: >
@@ -72,7 +79,7 @@
   register: openid_provider_check_out
   ignore_errors: yes
 
-- name: Check if OpenID Connect Provider not found 
+- name: Check if OpenID Connect Provider not found
   set_fact:
     create: '{{ openid_provider_check_out.stderr_lines[1] | regex_search("^An\s*error\s*occurred.*operation:\s*OpenIDConnect\s*Provider\s*not\s*found.*$",multiline=True, ignorecase=True)}}'
   when: openid_provider_check_out.stderr_lines | length == 2
@@ -85,7 +92,7 @@
     --client-id-list sts.amazonaws.com
   args:
     executable: /bin/bash
-  when: create is defined and  create | length > 0  and fingerprint_out and ( fingerprint_out.stderr | length == 0) 
+  when: create is defined and  create | length > 0  and fingerprint_out and ( fingerprint_out.stderr | length == 0)
   register: openid_provider_out
 
 - name: "Create IAM Managed Policy::{{ rosa_demo_policy_name }}"
@@ -102,5 +109,5 @@
     assume_role_policy_document: "{{ lookup('template','iam/trust-relationships.json')}}"
     description: "The ROSA Demos Role"
     managed_policy:
-     - "{{ rosa_demos_policy_out.policy.arn }}"
+      - "{{ rosa_demos_policy_out.policy.arn }}"
   register: rosa_demos_role_out
