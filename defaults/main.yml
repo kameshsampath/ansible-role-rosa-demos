@@ -1,5 +1,5 @@
 ---
-self_hosted_binary: ./bin/self-hosted-linux
+self_hosted_binary: /usr/local/bin/self-hosted-linux
 pkcs_key_file: "sa-singer.pub"
 aws_region: "us-west-2"
 oidc_bucket_name: "rosa-demos-oidc"
