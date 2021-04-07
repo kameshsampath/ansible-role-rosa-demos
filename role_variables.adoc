@@ -1,0 +1,33 @@
+[%header,cols="1,2,1"]
+.Role Variables
+|===
+| Variable Name| Description | Default value
+
+| aws_region
+| The default AWS region to use for creating the resources
+| us-west-2
+
+| oidc_bucket_name
+| The s3 bucket used for holding the OpenId connect provider assets
+| rosa-demos-oidc
+
+| rosa_demo_role_name
+| The AWS IAM role that will be used as part of the Demos
+| ROSADemosRole
+
+| rosa_demo_policy_name
+| The AWS IAM policy that will be used to control what the Kubernetes Service Accounts can do
+| ROSADemosPolicy
+
+| rollback
+| Clean up all the created AWS resources
+| False
+
+| iam
+| Create OpenId Connect Provider and create IAM resources
+| False
+
+| create_aws_credentials_file
+| Create AWS Credential file
+| True
+|===
