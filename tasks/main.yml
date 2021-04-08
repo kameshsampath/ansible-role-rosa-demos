@@ -28,3 +28,6 @@
 
 - include: iam/main.yml
   when: iam
+
+- include: dynamodb/main.yml
+  when: dynamodb

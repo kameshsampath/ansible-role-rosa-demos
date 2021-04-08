@@ -9,3 +9,8 @@ rosa_demo_policy_name: ROSADemosPolicy
 rollback: False
 oidc: False
 create_aws_credentials_file: True
+iam: True
+
+## DynamoDB
+dynamodb: False
+dynamodb_table_name: QuarkusFruits

@@ -27,6 +27,11 @@
 | Create OpenId Connect Provider and create IAM resources
 | False
 
+| dynamodb
+| Create DynamoDB Table
+| False
+
+
 | create_aws_credentials_file
 | Create AWS Credential file
 | True
