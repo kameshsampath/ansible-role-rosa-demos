@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.0.4](https://www.github.com/kameshsampath/ansible-role-rosa-demos/compare/v0.0.3...v0.0.4) (2021-04-08)
+
+
+### Bug Fixes
+
+* Create DynamoDB table ([7d0aa9a](https://www.github.com/kameshsampath/ansible-role-rosa-demos/commit/7d0aa9a8fd313cbf215ff0071c460ea15e5397de))
+
 ### [0.0.3](https://www.github.com/kameshsampath/ansible-role-rosa-demos/compare/v0.0.2...v0.0.3) (2021-04-01)
 
 
